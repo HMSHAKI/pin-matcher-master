@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pin Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="pin-generator half-width">
+                    <input class="form-control display-pin" type="text">
+                    <button class="generate-btn">Generate Pin</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-section half-width">
+                    <input class="form-control display-submit" type="text">
+                    <div class="numbers">
+                        <div class="calc-body">
+                            <div class="calc-button-row">
+                                <div class="button">7</div>
+                                <div class="button">8</div>
+                                <div class="button">9</div>
+                            </div>
+                            <div class="calc-button-row">
+                                <div class="button">4</div>
+                                <div class="button">5</div>
+                                <div class="button">6</div>
+                            </div>
+                            <div class="calc-button-row">
+                                <div class="button">1</div>
+                                <div class="button">2</div>
+                                <div class="button">3</div>
+                            </div>
+                            <div class="calc-button-row">
+                                <div class="button deleteLeft"><</div> 
+                                <div class="button">0</div>
+                                <div class="button clearAll">C</div>
+                            </div>
+                            <div>
+                                <button type="submit" class="submit-btn">Submit</button>
+                                <p class="action-left">3 try left</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="notify-section">
+                <p class="notify wrong-message">❌ Pin Didn't Match, Please try again</p>
+                <p class="notify success-message">✅ Pin Matched... Secret door is opening for you</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        
+        let digitCount = 0;
+        let tryCount = 3;
+        const min = 1000;
+        const max = 9999;
+        let isSubmitClicked = false;
+
+        const displayPin = document.querySelector('.display-pin');
+        const generateBtn = document.querySelector('.generate-btn');
+        const submitBtn = document.querySelector('.submit-btn');
+        const digitBtn = document.querySelectorAll('.button');
+        const displaySubmit = document.querySelector('.display-submit');
+        const successMessage = document.querySelector('.success-message');
+        const wrongMessage = document.querySelector('.wrong-message');
+        const clearAllBtn = document.querySelector('.clearAll');
+        const deleteBtn = document.querySelector('.deleteLeft');
+        const tryLeft = document.querySelector('.action-left');
+
+        document.addEventListener('DOMContentLoaded', submitDisabled);
+        generateBtn.addEventListener('click', generatePin);
+        digitBtn.forEach((digit) => digit.addEventListener('click', addDigit));
+        deleteBtn.addEventListener('click', deleteLeft);
+        clearAllBtn.addEventListener('click', clearAll);
+        submitBtn.addEventListener('click', submitPin);
+
+        function submitDisabled() {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('disabled');
+            tryLeft.style.display = 'none';
+
+            if (displayPin.value) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('disabled');
+                tryLeft.style.display = 'block';
+            }
+        }
+
+        function generatePin() {
+            const resultPin = Math.floor(Math.random() * (max - min + 1)) + min;
+            displayPin.value = resultPin;
+            displaySubmit.value = '';
+            notifyMessage();
+            submitDisabled(); 
+            digitCount = 0;
+            tryCount = 3;
+            tryLeft.innerText = `${tryCount} try left`;
+        }
+
+        function addDigit(event) {
+            const digit = event.target.innerText;
+            if (digitCount <= 3 && digit !== '<' && digit !== 'C') {
+                displaySubmit.value += digit;
+                digitCount++;
+                alertMessage();
+            }
+        }
+
+        function deleteLeft() {
+            displaySubmit.value = displaySubmit.value.slice(0, -1);
+            digitCount--;
+        }
+
+        function clearAll() {
+            digitCount = 0;
+            displaySubmit.value = '';
+        }
+
+        function submitPin() {
+            isSubmitClicked = true;
+            notifyMessage();
+            submitDisabled();
+            digitCount = 0;
+        }
+
+        function notifyMessage() {
+            successMessage.style.display = 'none';
+            wrongMessage.style.display = 'none';
+            if (isSubmitClicked) {
+                if (displayPin.value === displaySubmit.value) {
+                    successMessage.style.display = 'block';
+                    displayPin.value = '';
+                    displaySubmit.value = '';
+                    tryLeft.style.display = 'none';
+                } else {
+                    wrongMessage.style.display = 'block';
+                    --tryCount;
+                    tryLeft.innerText = `${tryCount} try left`;
+                    alertMessage();
+                    displaySubmit.value = '';
+                }
+            }
+            isSubmitClicked = false;
+        }
+
+        function alertMessage() {
+            if (!displayPin.value) {
+                alert('Please generate PIN at first!');
+                digitCount = 0;
+                return displaySubmit.value = '';
+            }
+            if (!displaySubmit.value) {
+                alert('Please press numbers before submitting!')
+            }
+            if (tryCount <= 0) {
+                alert('Oops! You have tried 3 times. Please generate PIN again.');
+                displayPin.value = '';
+                tryLeft.innerText = '';
+                wrongMessage.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
